@@ -14,13 +14,21 @@ Note: Permissions are only necessary if the corresponding container type's confi
 
 As an alternative to the `all` permission, you can grant permissions by container type. These are automatically generated from the plugin configuration.
 
+- `storagemonitorcontrol.owner.bbq`
+- `storagemonitorcontrol.owner.coffinstorage`
 - `storagemonitorcontrol.owner.composter`
+- `storagemonitorcontrol.owner.crudeoutput`
 - `storagemonitorcontrol.owner.dropbox`
+- `storagemonitorcontrol.owner.fridge`
+- `storagemonitorcontrol.owner.fuelstorage`
 - `storagemonitorcontrol.owner.furnace`
 - `storagemonitorcontrol.owner.furnace.large`
+- `storagemonitorcontrol.owner.guntrap`
 - `storagemonitorcontrol.owner.hitchtrough`
+- `storagemonitorcontrol.owner.hopperoutput`
 - `storagemonitorcontrol.owner.locker`
 - `storagemonitorcontrol.owner.mailbox`
+- `storagemonitorcontrol.owner.mixingtable`
 - `storagemonitorcontrol.owner.planter.small`
 - `storagemonitorcontrol.owner.planter.large`
 - `storagemonitorcontrol.owner.refinery_small`
@@ -36,6 +44,26 @@ Default configuration (no additional containers can receive storage monitors):
 ```json
 {
   "Containers": {
+    "bbq.deployed": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": 0.1,
+        "y": 0.0,
+        "z": 0.3
+      },
+      "RotationAngle": 90.0
+    },
+    "coffinstorage": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": -0.8,
+        "y": 0.57,
+        "z": 0.0
+      },
+      "RotationAngle": 10.0
+    },
     "composter": {
       "Enabled": false,
       "RequirePermission": false,
@@ -44,6 +72,16 @@ Default configuration (no additional containers can receive storage monitors):
         "y": 1.54,
         "z": 0.4
       }
+    },
+    "crudeoutput": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": -0.4,
+        "y": 0.0,
+        "z": 2.5
+      },
+      "RotationAngle": 90.0
     },
     "dropbox.deployed": {
       "Enabled": false,
@@ -54,6 +92,25 @@ Default configuration (no additional containers can receive storage monitors):
         "z": -0.155
       },
       "RotationAngle": 184.0
+    },
+    "fridge.deployed": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": -0.2,
+        "y": 1.995,
+        "z": 0.2
+      },
+      "RotationAngle": 10.0
+    },
+    "fuelstorage": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": 0.415,
+        "y": 1.3,
+        "z": 0.0
+      }
     },
     "furnace": {
       "Enabled": false,
@@ -74,6 +131,16 @@ Default configuration (no additional containers can receive storage monitors):
       },
       "RotationAngle": 190.0
     },
+    "guntrap.deployed": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": 0.0,
+        "y": 0.032,
+        "z": -0.3
+      },
+      "RotationAngle": 180.0
+    },
     "hitchtrough.deployed": {
       "Enabled": false,
       "RequirePermission": false,
@@ -81,6 +148,15 @@ Default configuration (no additional containers can receive storage monitors):
         "x": -0.82,
         "y": 0.65,
         "z": 0.215
+      }
+    },
+    "hopperoutput": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": -0.71,
+        "y": -0.02,
+        "z": 1.25
       }
     },
     "locker.deployed": {
@@ -100,6 +176,15 @@ Default configuration (no additional containers can receive storage monitors):
         "x": 0.0,
         "y": 1.327,
         "z": 0.21
+      }
+    },
+    "mixingtable.deployed": {
+      "Enabled": false,
+      "RequirePermission": false,
+      "Position": {
+        "x": -0.9,
+        "y": 0.0,
+        "z": 0.0
       }
     },
     "planter.small.deployed": {
@@ -152,6 +237,8 @@ Default configuration (no additional containers can receive storage monitors):
   }
 }
 ```
+
+Note: The `fuelstorage` prefab refers to the fuel container for mining quarries and pump jacks.
 
 Each container type has the following configuration options, mapped in the config to the container's prefab short name.
 

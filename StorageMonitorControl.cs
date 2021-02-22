@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Storage Monitor Control", "WhiteThunder", "1.0.0")]
+    [Info("Storage Monitor Control", "WhiteThunder", "1.1.0")]
     [Description("Allows storage monitors to be deployed to more container types.")]
     internal class StorageMonitorControl : CovalencePlugin
     {
@@ -143,13 +143,21 @@ namespace Oxide.Plugins
             [JsonProperty("Containers")]
             public Dictionary<string, ContainerConfig> Containers = new Dictionary<string, ContainerConfig>()
             {
+                ["bbq.deployed"] = new ContainerConfig { Position = new Vector3(0.1f, 0, 0.3f), RotationAngle = 90 },
+                ["coffinstorage"] = new ContainerConfig { Position = new Vector3(-0.8f, 0.57f, 0), RotationAngle = 10 },
                 ["composter"] = new ContainerConfig { Position = new Vector3(0, 1.54f, 0.4f) },
+                ["crudeoutput"] = new ContainerConfig { Position = new Vector3(-0.4f, 0, 2.5f), RotationAngle = 90 },
                 ["dropbox.deployed"] = new ContainerConfig { Position = new Vector3(0.3f, 0.545f, -0.155f), RotationAngle = 184 },
+                ["fridge.deployed"] = new ContainerConfig { Position = new Vector3(-0.2f, 1.995f, 0.2f), RotationAngle = 10 },
+                ["fuelstorage"] = new ContainerConfig { Position = new Vector3(-1.585f, -0.034f, 0) },
                 ["furnace"] = new ContainerConfig { Position = new Vector3(0, 1.53f, 0.05f) },
                 ["furnace.large"] = new ContainerConfig { Position = new Vector3(0.31f, 0.748f, -1.9f), RotationAngle = 190 },
+                ["guntrap.deployed"] = new ContainerConfig { Position = new Vector3(0, 0.032f, -0.3f), RotationAngle = 180 },
                 ["hitchtrough.deployed"] = new ContainerConfig { Position = new Vector3(-0.82f, 0.65f, 0.215f) },
+                ["hopperoutput"] = new ContainerConfig { Position = new Vector3(-0.71f, -0.02f, 1.25f) },
                 ["locker.deployed"] = new ContainerConfig { Position = new Vector3(-0.67f, 2.238f, 0.04f), RotationAngle = 10 },
                 ["mailbox.deployed"] = new ContainerConfig { Position = new Vector3(0f, 1.327f, 0.21f) },
+                ["mixingtable.deployed"] = new ContainerConfig { Position = new Vector3(-0.9f, 0, 0) },
                 ["planter.small.deployed"] = new ContainerConfig { Position = new Vector3(-1.22f, 0.482f, 0.3f) },
                 ["planter.large.deployed"] = new ContainerConfig { Position = new Vector3(-1.22f, 0.482f, 1.22f) },
                 ["refinery_small_deployed"] = new ContainerConfig { Position = new Vector3(0, 2.477f, 0), RotationAngle = 180 },
