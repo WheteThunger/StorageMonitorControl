@@ -1,12 +1,14 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Storage Monitor Control", "WhiteThunder", "1.1.0")]
+    [Info("Storage Monitor Control", "WhiteThunder", "1.1.1")]
     [Description("Allows storage monitors to be deployed to more container types.")]
     internal class StorageMonitorControl : CovalencePlugin
     {
@@ -17,6 +19,11 @@ namespace Oxide.Plugins
 
         private const string StorageMonitorBoneName = "storagemonitor";
 
+        private WaitWhile WaitWhileSaving = new WaitWhile(() => SaveRestore.IsSaving);
+
+        private HashSet<StorageMonitor> _quarryMonitors = new HashSet<StorageMonitor>();
+
+        private Coroutine _saveRoutine;
         private Configuration _pluginConfig;
 
         #endregion
@@ -40,10 +47,37 @@ namespace Oxide.Plugins
             {
                 var container = entity as StorageContainer;
                 if (container != null)
+                {
                     OnEntitySpawned(container);
+                    continue;
+                }
+
+                var storageMonitor = entity as StorageMonitor;
+                if (storageMonitor != null)
+                {
+                    var parentQuarry = storageMonitor.GetParentEntity() as MiningQuarry;
+                    if (parentQuarry != null)
+                        ReparentToClosestQuarryStorage(storageMonitor, parentQuarry);
+
+                    OnEntitySpawned(storageMonitor);
+                    continue;
+                }
             }
 
             Subscribe(nameof(OnEntitySpawned));
+        }
+
+        private void Unload()
+        {
+            if (_saveRoutine != null)
+                ServerMgr.Instance.StopCoroutine(_saveRoutine);
+
+            ReparentMonitorsToQuarry();
+        }
+
+        private void OnServerSave()
+        {
+            _saveRoutine = ServerMgr.Instance.StartCoroutine(ReparentWhileSaving());
         }
 
         private void OnEntitySpawned(StorageContainer container)
@@ -64,9 +98,24 @@ namespace Oxide.Plugins
             if (containerConfig == null || !containerConfig.Enabled)
                 return;
 
-            storageMonitor.transform.localPosition = containerConfig.Position;
-            storageMonitor.transform.localRotation = containerConfig.Rotation;
-            storageMonitor.SendNetworkUpdateImmediate();
+            if (HasQuarryGrandparent(storageMonitor, parentContainer))
+                _quarryMonitors.Add(storageMonitor);
+
+            var transform = storageMonitor.transform;
+
+            if (transform.localPosition != containerConfig.Position
+                || transform.localRotation.eulerAngles != containerConfig.Rotation.eulerAngles)
+            {
+                transform.localPosition = containerConfig.Position;
+                transform.localRotation = containerConfig.Rotation;
+                storageMonitor.InvalidateNetworkCache();
+                storageMonitor.SendNetworkUpdate_Position();
+            }
+        }
+
+        private void OnEntityKill(StorageMonitor storageMonitor)
+        {
+            _quarryMonitors.Remove(storageMonitor);
         }
 
         #endregion
@@ -87,6 +136,25 @@ namespace Oxide.Plugins
         private static bool NativelySupportsStorageMonitor(BaseEntity entity) =>
             entity.model != null
             && entity.FindBone(StorageMonitorBoneName) != entity.model.rootBone;
+
+        private static bool HasQuarryGrandparent(StorageMonitor storageMonitor, StorageContainer parentContainer, out MiningQuarry quarry)
+        {
+            // Ignore if the parent has saving enabled, in case a plugin added other containers to quarries.
+            if (parentContainer.enableSaving)
+            {
+                quarry = null;
+                return false;
+            }
+
+            quarry = parentContainer.GetParentEntity() as MiningQuarry;
+            return quarry != null;
+        }
+
+        private static bool HasQuarryGrandparent(StorageMonitor storageMonitor, StorageContainer parentContainer)
+        {
+            MiningQuarry quarry;
+            return HasQuarryGrandparent(storageMonitor, parentContainer, out quarry);
+        }
 
         private bool ShouldEnableMonitoring(StorageContainer container)
         {
@@ -112,6 +180,76 @@ namespace Oxide.Plugins
 
             return permission.UserHasPermission(ownerIdString, PermissionAll) ||
                 permission.UserHasPermission(ownerIdString, containerConfig.PermissionName);
+        }
+
+        private void ReparentMonitorsToQuarry()
+        {
+            foreach (var storageMonitor in _quarryMonitors)
+            {
+                var parentContainer = storageMonitor.GetParentEntity() as StorageContainer;
+                if (parentContainer == null)
+                    continue;
+
+                MiningQuarry quarry;
+                if (HasQuarryGrandparent(storageMonitor, parentContainer, out quarry))
+                    storageMonitor.SetParent(quarry, worldPositionStays: true);
+            }
+        }
+
+        private void ReparentToClosestQuarryStorage(StorageMonitor storageMonitor, MiningQuarry quarry)
+        {
+            var transform = storageMonitor.transform;
+
+            var fuelStorage = quarry.fuelStoragePrefab.instance as StorageContainer;
+            var fuelStorageSqrDistance = fuelStorage != null
+                ? (fuelStorage.transform.position - transform.position).sqrMagnitude
+                : float.PositiveInfinity;
+
+            var outputStorage = quarry.hopperPrefab.instance as StorageContainer;
+            var outputStorageSqrDistance = outputStorage != null
+                ? (outputStorage.transform.position - transform.position).sqrMagnitude
+                : float.PositiveInfinity;
+
+            StorageContainer newStorageParent = null;
+            if (fuelStorageSqrDistance < outputStorageSqrDistance)
+                newStorageParent = fuelStorage;
+            else if (outputStorageSqrDistance < fuelStorageSqrDistance)
+                newStorageParent = outputStorage;
+
+            if (newStorageParent != null)
+            {
+                storageMonitor.SetParent(newStorageParent, worldPositionStays: true);
+                newStorageParent.SetSlot(BaseEntity.Slot.StorageMonitor, storageMonitor);
+
+                // Remove delegate before adding just in case it's already present (there isn't a way to check).
+                newStorageParent.inventory.onItemAddedRemoved -= storageMonitor.OnContainerChanged;
+                newStorageParent.inventory.onItemAddedRemoved += storageMonitor.OnContainerChanged;
+            }
+        }
+
+        private void ReparentMonitorsToQuarryContainers()
+        {
+            foreach (var storageMonitor in _quarryMonitors)
+            {
+                var quarry = storageMonitor.GetParentEntity() as MiningQuarry;
+                if (quarry == null)
+                    continue;
+
+                ReparentToClosestQuarryStorage(storageMonitor, quarry);
+            }
+        }
+
+        private IEnumerator ReparentWhileSaving()
+        {
+            TrackStart();
+            ReparentMonitorsToQuarry();
+            TrackEnd();
+
+            yield return WaitWhileSaving;
+
+            TrackStart();
+            ReparentMonitorsToQuarryContainers();
+            TrackEnd();
         }
 
         #endregion
@@ -166,7 +304,7 @@ namespace Oxide.Plugins
             };
         }
 
-        internal class ContainerConfig
+        private class ContainerConfig
         {
             [JsonProperty("Enabled")]
             public bool Enabled = false;
@@ -298,8 +436,9 @@ namespace Oxide.Plugins
                     SaveConfig();
                 }
             }
-            catch
+            catch (Exception e)
             {
+                LogError(e.Message);
                 LogWarning($"Configuration file {Name}.json is invalid; using defaults");
                 LoadDefaultConfig();
             }
