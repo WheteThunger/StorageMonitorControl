@@ -8,7 +8,7 @@ Tip: Storage monitors don't update realtime in the Rust+ companion app when only
 
 ## Permissions
 
-Note: Permissions are only necessary if the corresponding container type's configuration has specified `"RequirePermission": true`. The default is `false` for all preloaded container types.
+Note: Permissions are only necessary if the corresponding container type's configuration has specified `"Require permission": true`. The default is `false` for all preloaded container types.
 
 - `storagemonitorcontrol.owner.all` -- All containers deployed by players with this permission will be eligible to receive a storage monitor, as long as those container types are enabled in the plugin configuration.
 
@@ -46,27 +46,35 @@ Default configuration (no additional containers can receive storage monitors):
   "Containers": {
     "bbq.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.1,
         "y": 0.0,
         "z": 0.3
       },
-      "RotationAngle": 90.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 90.0,
+        "z": 0.0
+      }
     },
     "coffinstorage": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
-        "x": -0.8,
-        "y": 0.57,
+        "x": -1.15,
+        "y": 0.196,
         "z": 0.0
       },
-      "RotationAngle": 10.0
+      "Rotation angles": {
+        "x": 90.0,
+        "y": 0.0,
+        "z": 90.0
+      }
     },
     "composter": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 1.54,
@@ -75,46 +83,58 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "crudeoutput": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.4,
         "y": 0.0,
         "z": 2.5
       },
-      "RotationAngle": 90.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 90.0,
+        "z": 0.0
+      }
     },
     "dropbox.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.3,
         "y": 0.545,
         "z": -0.155
       },
-      "RotationAngle": 184.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 184.0,
+        "z": 0.0
+      }
     },
     "fridge.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.2,
         "y": 1.995,
         "z": 0.2
       },
-      "RotationAngle": 10.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 10.0,
+        "z": 0.0
+      }
     },
     "fuelstorage": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
-        "x": 0.415,
-        "y": 1.3,
+        "x": -1.585,
+        "y": -0.034,
         "z": 0.0
       }
     },
     "furnace": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 1.53,
@@ -123,27 +143,35 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "furnace.large": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.31,
         "y": 0.748,
         "z": -1.9
       },
-      "RotationAngle": 190.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 190.0,
+        "z": 0.0
+      }
     },
     "guntrap.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 0.032,
         "z": -0.3
       },
-      "RotationAngle": 180.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 180.0,
+        "z": 0.0
+      }
     },
     "hitchtrough.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.82,
         "y": 0.65,
@@ -152,7 +180,7 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "hopperoutput": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.71,
         "y": -0.02,
@@ -161,17 +189,21 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "locker.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.67,
         "y": 2.238,
         "z": 0.04
       },
-      "RotationAngle": 10.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 10.0,
+        "z": 0.0
+      }
     },
     "mailbox.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 1.327,
@@ -180,7 +212,7 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "mixingtable.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.9,
         "y": 0.0,
@@ -189,7 +221,7 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "planter.small.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -1.22,
         "y": 0.482,
@@ -198,7 +230,7 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "planter.large.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -1.22,
         "y": 0.482,
@@ -207,17 +239,21 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "refinery_small_deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 2.477,
         "z": 0.0
       },
-      "RotationAngle": 180.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 180.0,
+        "z": 0.0
+      }
     },
     "survivalfishtrap.deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": 0.0,
         "y": 0.4,
@@ -226,13 +262,17 @@ Default configuration (no additional containers can receive storage monitors):
     },
     "woodbox_deployed": {
       "Enabled": false,
-      "RequirePermission": false,
+      "Require permission": false,
       "Position": {
         "x": -0.24,
         "y": 0.55,
         "z": 0.14
       },
-      "RotationAngle": 10.0
+      "Rotation angles": {
+        "x": 0.0,
+        "y": 10.0,
+        "z": 0.0
+      }
     }
   }
 }
@@ -243,9 +283,9 @@ Note: The `fuelstorage` prefab refers to the fuel container for mining quarries 
 Each container type has the following configuration options, mapped in the config to the container's prefab short name.
 
 - `Enabled` (`true` or `false`) -- Must be `true` for players to be able to deploy storage monitors to containers of this type.
-- `RequirePermission` (`true` or `false`) -- While `true`, only containers of this type that were deployed by players with the corresponding permission will be eligible to receive storage monitors.
+- `Require permission` (`true` or `false`) -- While `true`, only containers of this type that were deployed by players with the corresponding permission will be eligible to receive storage monitors.
   - Note: The container must have been deployed while the player had permission or that container won't be eligible to receive a storage monitor until the next server restart. This can be improved upon request.
-- `Position` (`x`, `y`, `z`) -- The position that the storage monitor will be placed in, relative to the parent container.
-- `RotationAngle` -- Angle at which to rotate the storage monitor around the Y axis of the parent container.
+- `Position` (`x`, `y`, `z`) -- Position of the storage monitor, relative to the parent container.
+- `Rotation angles` -- Rotation of the storage monitor, relative to the parent container.
 
 Many container types are provided in the plugin's default configuration, but you can also add other container types if you know the container's short prefab name. If you add more, please post in the plugin's help forum to suggest it be added to the default so that others can benefit from it.

@@ -32,13 +32,9 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            _config.GeneratePermissionNames();
-
             permission.RegisterPermission(PermissionAll, this);
-            foreach (var entry in _config.Containers)
-            {
-                permission.RegisterPermission(entry.Value.PermissionName, this);
-            }
+
+            _config.Init(this);
 
             Unsubscribe(nameof(OnEntitySpawned));
         }
@@ -98,7 +94,7 @@ namespace Oxide.Plugins
             if (parentContainer == null || NativelySupportsStorageMonitor(parentContainer))
                 return;
 
-            var containerConfig = GetContainerConfig(parentContainer);
+            var containerConfig = _config.GetContainerConfig(parentContainer);
             if (containerConfig == null || !containerConfig.Enabled)
                 return;
 
@@ -110,10 +106,10 @@ namespace Oxide.Plugins
             var transform = storageMonitor.transform;
 
             if (transform.localPosition != containerConfig.Position
-                || transform.localRotation.eulerAngles != containerConfig.Rotation.eulerAngles)
+                || transform.localEulerAngles != containerConfig.RotationAngles)
             {
                 transform.localPosition = containerConfig.Position;
-                transform.localRotation = containerConfig.Rotation;
+                transform.localEulerAngles = containerConfig.RotationAngles;
                 storageMonitor.InvalidateNetworkCache();
                 storageMonitor.SendNetworkUpdate_Position();
             }
@@ -155,7 +151,7 @@ namespace Oxide.Plugins
 
         private bool ShouldEnableMonitoring(StorageContainer container)
         {
-            var containerConfig = GetContainerConfig(container);
+            var containerConfig = _config.GetContainerConfig(container);
             if (containerConfig == null || !containerConfig.Enabled)
                 return false;
 
@@ -176,7 +172,7 @@ namespace Oxide.Plugins
             var ownerIdString = entity.OwnerID.ToString();
 
             return permission.UserHasPermission(ownerIdString, PermissionAll)
-                || permission.UserHasPermission(ownerIdString, containerConfig.PermissionName);
+                || permission.UserHasPermission(ownerIdString, containerConfig.Permission);
         }
 
         private void ReparentMonitorsToQuarry()
@@ -259,90 +255,86 @@ namespace Oxide.Plugins
 
         #region Configuration
 
-        private ContainerConfig GetContainerConfig(StorageContainer container)
-        {
-            ContainerConfig containerConfig;
-            return _config.Containers.TryGetValue(container.ShortPrefabName, out containerConfig)
-                ? containerConfig
-                : null;
-        }
-
         private class Configuration : BaseConfiguration
         {
-            public void GeneratePermissionNames()
-            {
-                foreach (var entry in Containers)
-                {
-                    // Make the permission name less redundant
-                    entry.Value.PermissionName = string.Format(PermissionEntityFormat, entry.Key)
-                        .Replace(".deployed", string.Empty)
-                        .Replace("_deployed", string.Empty)
-                        .Replace(".entity", string.Empty);
-                }
-            }
-
             [JsonProperty("Containers")]
             public Dictionary<string, ContainerConfig> Containers = new Dictionary<string, ContainerConfig>()
             {
-                ["bbq.deployed"] = new ContainerConfig { Position = new Vector3(0.1f, 0, 0.3f), RotationAngle = 90 },
-                ["coffinstorage"] = new ContainerConfig { Position = new Vector3(-0.8f, 0.57f, 0), RotationAngle = 10 },
+                ["bbq.deployed"] = new ContainerConfig { Position = new Vector3(0.1f, 0, 0.3f), RotationAngles = new Vector3(0, 90, 0) },
+                ["coffinstorage"] = new ContainerConfig { Position = new Vector3(-1.15f, 0.196f, 0), RotationAngles = new Vector3(90, 0, 90) },
                 ["composter"] = new ContainerConfig { Position = new Vector3(0, 1.54f, 0.4f) },
-                ["crudeoutput"] = new ContainerConfig { Position = new Vector3(-0.4f, 0, 2.5f), RotationAngle = 90 },
-                ["dropbox.deployed"] = new ContainerConfig { Position = new Vector3(0.3f, 0.545f, -0.155f), RotationAngle = 184 },
-                ["fridge.deployed"] = new ContainerConfig { Position = new Vector3(-0.2f, 1.995f, 0.2f), RotationAngle = 10 },
+                ["crudeoutput"] = new ContainerConfig { Position = new Vector3(-0.4f, 0, 2.5f), RotationAngles = new Vector3(0, 90, 0) },
+                ["dropbox.deployed"] = new ContainerConfig { Position = new Vector3(0.3f, 0.545f, -0.155f), RotationAngles = new Vector3(0, 184, 0) },
+                ["fridge.deployed"] = new ContainerConfig { Position = new Vector3(-0.2f, 1.995f, 0.2f), RotationAngles = new Vector3(0, 10, 0) },
                 ["fuelstorage"] = new ContainerConfig { Position = new Vector3(-1.585f, -0.034f, 0) },
                 ["furnace"] = new ContainerConfig { Position = new Vector3(0, 1.53f, 0.05f) },
-                ["furnace.large"] = new ContainerConfig { Position = new Vector3(0.31f, 0.748f, -1.9f), RotationAngle = 190 },
-                ["guntrap.deployed"] = new ContainerConfig { Position = new Vector3(0, 0.032f, -0.3f), RotationAngle = 180 },
+                ["furnace.large"] = new ContainerConfig { Position = new Vector3(0.31f, 0.748f, -1.9f), RotationAngles = new Vector3(0, 190, 0) },
+                ["guntrap.deployed"] = new ContainerConfig { Position = new Vector3(0, 0.032f, -0.3f), RotationAngles = new Vector3(0, 180, 0) },
                 ["hitchtrough.deployed"] = new ContainerConfig { Position = new Vector3(-0.82f, 0.65f, 0.215f) },
                 ["hopperoutput"] = new ContainerConfig { Position = new Vector3(-0.71f, -0.02f, 1.25f) },
-                ["locker.deployed"] = new ContainerConfig { Position = new Vector3(-0.67f, 2.238f, 0.04f), RotationAngle = 10 },
+                ["locker.deployed"] = new ContainerConfig { Position = new Vector3(-0.67f, 2.238f, 0.04f), RotationAngles = new Vector3(0, 10, 0) },
                 ["mailbox.deployed"] = new ContainerConfig { Position = new Vector3(0f, 1.327f, 0.21f) },
                 ["mixingtable.deployed"] = new ContainerConfig { Position = new Vector3(-0.9f, 0, 0) },
                 ["planter.small.deployed"] = new ContainerConfig { Position = new Vector3(-1.22f, 0.482f, 0.3f) },
                 ["planter.large.deployed"] = new ContainerConfig { Position = new Vector3(-1.22f, 0.482f, 1.22f) },
-                ["refinery_small_deployed"] = new ContainerConfig { Position = new Vector3(0, 2.477f, 0), RotationAngle = 180 },
+                ["refinery_small_deployed"] = new ContainerConfig { Position = new Vector3(0, 2.477f, 0), RotationAngles = new Vector3(0, 180, 0) },
                 ["survivalfishtrap.deployed"] = new ContainerConfig { Position = new Vector3(0, 0.4f, -0.6f) },
-                ["woodbox_deployed"] = new ContainerConfig { Position = new Vector3(-0.24f, 0.55f, 0.14f), RotationAngle = 10 },
+                ["woodbox_deployed"] = new ContainerConfig { Position = new Vector3(-0.24f, 0.55f, 0.14f), RotationAngles = new Vector3(0, 10, 0) },
             };
+
+            public void Init(StorageMonitorControl plugin)
+            {
+                foreach (var entry in Containers)
+                {
+                    entry.Value.Init(plugin, entry.Key);
+                }
+            }
+
+            public ContainerConfig GetContainerConfig(StorageContainer container)
+            {
+                ContainerConfig containerConfig;
+                return Containers.TryGetValue(container.ShortPrefabName, out containerConfig)
+                    ? containerConfig
+                    : null;
+            }
         }
 
+        [JsonObject(MemberSerialization.OptIn)]
         private class ContainerConfig
         {
             [JsonProperty("Enabled")]
             public bool Enabled = false;
 
-            [JsonProperty("RequirePermission")]
+            [JsonProperty("Require permission")]
             public bool RequirePermission = false;
+
+            [JsonProperty("RequirePermission")]
+            private bool DeprecatedRequirePermission { set { RequirePermission = value; } }
 
             [JsonProperty("Position")]
             public Vector3 Position;
 
-            [JsonProperty("RotationAngle", DefaultValueHandling = DefaultValueHandling.Ignore)]
-            public float RotationAngle;
+            [JsonProperty("Rotation angles", DefaultValueHandling = DefaultValueHandling.Ignore)]
+            public Vector3 RotationAngles;
 
-            private bool _rotationCached = false;
-            private Quaternion _rotation;
+            [JsonProperty("RotationAngle")]
+            public float DeprecatedRotationAngle { set { RotationAngles = new Vector3(0, value, 0); } }
 
-            [JsonIgnore]
-            public Quaternion Rotation
+            public string Permission;
+
+            public void Init(StorageMonitorControl plugin, string entityName)
             {
-                get
-                {
-                    if (_rotationCached)
-                        return _rotation;
+                if (string.IsNullOrWhiteSpace(entityName))
+                    return;
 
-                    _rotation = RotationAngle == 0
-                        ? Quaternion.identity
-                        : Quaternion.Euler(0, RotationAngle, 0);
-                    _rotationCached = true;
+                Permission = string.Format(PermissionEntityFormat, entityName)
+                    // Make the permission name less redundant
+                    .Replace(".deployed", string.Empty)
+                    .Replace("_deployed", string.Empty)
+                    .Replace(".entity", string.Empty);;
 
-                    return _rotation;
-                }
+                plugin.permission.RegisterPermission(Permission, plugin);
             }
-
-            [JsonIgnore]
-            public string PermissionName;
         }
 
         private Configuration GetDefaultConfig() => new Configuration();
