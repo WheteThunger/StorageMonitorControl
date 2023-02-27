@@ -19,6 +19,7 @@ As an alternative to the `all` permission, you can grant permissions by containe
 - `storagemonitorcontrol.owner.composter`
 - `storagemonitorcontrol.owner.crudeoutput`
 - `storagemonitorcontrol.owner.dropbox`
+- `storagemonitorcontrol.owner.electricfurnace`
 - `storagemonitorcontrol.owner.fridge`
 - `storagemonitorcontrol.owner.fuelstorage`
 - `storagemonitorcontrol.owner.furnace`
@@ -107,6 +108,15 @@ Default configuration (no additional containers can receive storage monitors):
         "x": 0.0,
         "y": 184.0,
         "z": 0.0
+      }
+    },
+    "electricfurnace.deployed": {
+      "Enabled": false,
+      "Require permission": false,
+      "Position": {
+        "x": -0.135,
+        "y": 1.135,
+        "z": 0.14
       }
     },
     "fridge.deployed": {

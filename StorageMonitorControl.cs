@@ -265,6 +265,7 @@ namespace Oxide.Plugins
                 ["composter"] = new ContainerConfig { Position = new Vector3(0, 1.54f, 0.4f) },
                 ["crudeoutput"] = new ContainerConfig { Position = new Vector3(-0.4f, 0, 2.5f), RotationAngles = new Vector3(0, 90, 0) },
                 ["dropbox.deployed"] = new ContainerConfig { Position = new Vector3(0.3f, 0.545f, -0.155f), RotationAngles = new Vector3(0, 184, 0) },
+                ["electricfurnace.deployed"] = new ContainerConfig { Position = new Vector3(-0.135f, 1.135f, 0.14f) },
                 ["fridge.deployed"] = new ContainerConfig { Position = new Vector3(-0.2f, 1.995f, 0.2f), RotationAngles = new Vector3(0, 10, 0) },
                 ["fuelstorage"] = new ContainerConfig { Position = new Vector3(-1.585f, -0.034f, 0) },
                 ["furnace"] = new ContainerConfig { Position = new Vector3(0, 1.53f, 0.05f) },
