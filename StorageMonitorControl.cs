@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Storage Monitor Control", "WhiteThunder", "1.1.1")]
+    [Info("Storage Monitor Control", "WhiteThunder", "1.2.0")]
     [Description("Allows storage monitors to be deployed to more container types.")]
     internal class StorageMonitorControl : CovalencePlugin
     {
