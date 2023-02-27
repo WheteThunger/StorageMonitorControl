@@ -24,7 +24,7 @@ namespace Oxide.Plugins
         private HashSet<StorageMonitor> _quarryMonitors = new HashSet<StorageMonitor>();
 
         private Coroutine _saveRoutine;
-        private Configuration _pluginConfig;
+        private Configuration _config;
 
         #endregion
 
@@ -32,11 +32,13 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            _pluginConfig.GeneratePermissionNames();
+            _config.GeneratePermissionNames();
 
             permission.RegisterPermission(PermissionAll, this);
-            foreach (var entry in _pluginConfig.Containers)
+            foreach (var entry in _config.Containers)
+            {
                 permission.RegisterPermission(entry.Value.PermissionName, this);
+            }
 
             Unsubscribe(nameof(OnEntitySpawned));
         }
@@ -70,7 +72,9 @@ namespace Oxide.Plugins
         private void Unload()
         {
             if (_saveRoutine != null)
+            {
                 ServerMgr.Instance.StopCoroutine(_saveRoutine);
+            }
 
             ReparentMonitorsToQuarry();
         }
@@ -98,8 +102,10 @@ namespace Oxide.Plugins
             if (containerConfig == null || !containerConfig.Enabled)
                 return;
 
-            if (HasQuarryGrandparent(storageMonitor, parentContainer))
+            if (IsQuarryStorage(parentContainer))
+            {
                 _quarryMonitors.Add(storageMonitor);
+            }
 
             var transform = storageMonitor.transform;
 
@@ -122,38 +128,29 @@ namespace Oxide.Plugins
 
         #region Helper Methods
 
-        private static T GetChildEntity<T>(BaseEntity entity) where T : BaseEntity
+        private static bool NativelySupportsStorageMonitor(BaseEntity entity)
         {
-            foreach (BaseEntity child in entity.children)
-            {
-                var childOfType = child as T;
-                if (childOfType != null)
-                    return childOfType;
-            }
-            return null;
+            return entity.model != null
+                && entity.FindBone(StorageMonitorBoneName) != entity.model.rootBone;
         }
 
-        private static bool NativelySupportsStorageMonitor(BaseEntity entity) =>
-            entity.model != null
-            && entity.FindBone(StorageMonitorBoneName) != entity.model.rootBone;
-
-        private static bool HasQuarryGrandparent(StorageMonitor storageMonitor, StorageContainer parentContainer, out MiningQuarry quarry)
+        private static bool IsQuarryStorage(StorageContainer storageContainer, out MiningQuarry quarry)
         {
             // Ignore if the parent has saving enabled, in case a plugin added other containers to quarries.
-            if (parentContainer.enableSaving)
+            if (storageContainer.enableSaving)
             {
                 quarry = null;
                 return false;
             }
 
-            quarry = parentContainer.GetParentEntity() as MiningQuarry;
+            quarry = storageContainer.GetParentEntity() as MiningQuarry;
             return quarry != null;
         }
 
-        private static bool HasQuarryGrandparent(StorageMonitor storageMonitor, StorageContainer parentContainer)
+        private static bool IsQuarryStorage(StorageContainer storageContainer)
         {
             MiningQuarry quarry;
-            return HasQuarryGrandparent(storageMonitor, parentContainer, out quarry);
+            return IsQuarryStorage(storageContainer, out quarry);
         }
 
         private bool ShouldEnableMonitoring(StorageContainer container)
@@ -178,8 +175,8 @@ namespace Oxide.Plugins
 
             var ownerIdString = entity.OwnerID.ToString();
 
-            return permission.UserHasPermission(ownerIdString, PermissionAll) ||
-                permission.UserHasPermission(ownerIdString, containerConfig.PermissionName);
+            return permission.UserHasPermission(ownerIdString, PermissionAll)
+                || permission.UserHasPermission(ownerIdString, containerConfig.PermissionName);
         }
 
         private void ReparentMonitorsToQuarry()
@@ -191,8 +188,10 @@ namespace Oxide.Plugins
                     continue;
 
                 MiningQuarry quarry;
-                if (HasQuarryGrandparent(storageMonitor, parentContainer, out quarry))
+                if (IsQuarryStorage(parentContainer, out quarry))
+                {
                     storageMonitor.SetParent(quarry, worldPositionStays: true);
+                }
             }
         }
 
@@ -212,9 +211,13 @@ namespace Oxide.Plugins
 
             StorageContainer newStorageParent = null;
             if (fuelStorageSqrDistance < outputStorageSqrDistance)
+            {
                 newStorageParent = fuelStorage;
+            }
             else if (outputStorageSqrDistance < fuelStorageSqrDistance)
+            {
                 newStorageParent = outputStorage;
+            }
 
             if (newStorageParent != null)
             {
@@ -259,12 +262,12 @@ namespace Oxide.Plugins
         private ContainerConfig GetContainerConfig(StorageContainer container)
         {
             ContainerConfig containerConfig;
-            return _pluginConfig.Containers.TryGetValue(container.ShortPrefabName, out containerConfig)
+            return _config.Containers.TryGetValue(container.ShortPrefabName, out containerConfig)
                 ? containerConfig
                 : null;
         }
 
-        private class Configuration : SerializableConfiguration
+        private class Configuration : BaseConfiguration
         {
             public void GeneratePermissionNames()
             {
@@ -344,11 +347,9 @@ namespace Oxide.Plugins
 
         private Configuration GetDefaultConfig() => new Configuration();
 
-        #endregion
+        #region Configuration Helpers
 
-        #region Configuration Boilerplate
-
-        private class SerializableConfiguration
+        private class BaseConfiguration
         {
             public string ToJson() => JsonConvert.SerializeObject(this);
 
@@ -377,7 +378,7 @@ namespace Oxide.Plugins
             }
         }
 
-        private bool MaybeUpdateConfig(SerializableConfiguration config)
+        private bool MaybeUpdateConfig(BaseConfiguration config)
         {
             var currentWithDefaults = config.ToDictionary();
             var currentRaw = Config.ToDictionary(x => x.Key, x => x.Value);
@@ -417,20 +418,20 @@ namespace Oxide.Plugins
             return changed;
         }
 
-        protected override void LoadDefaultConfig() => _pluginConfig = GetDefaultConfig();
+        protected override void LoadDefaultConfig() => _config = GetDefaultConfig();
 
         protected override void LoadConfig()
         {
             base.LoadConfig();
             try
             {
-                _pluginConfig = Config.ReadObject<Configuration>();
-                if (_pluginConfig == null)
+                _config = Config.ReadObject<Configuration>();
+                if (_config == null)
                 {
                     throw new JsonException();
                 }
 
-                if (MaybeUpdateConfig(_pluginConfig))
+                if (MaybeUpdateConfig(_config))
                 {
                     LogWarning("Configuration appears to be outdated; updating and saving");
                     SaveConfig();
@@ -447,8 +448,10 @@ namespace Oxide.Plugins
         protected override void SaveConfig()
         {
             Log($"Configuration changes saved to {Name}.json");
-            Config.WriteObject(_pluginConfig, true);
+            Config.WriteObject(_config, true);
         }
+
+        #endregion
 
         #endregion
     }
