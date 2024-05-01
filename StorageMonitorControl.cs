@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Storage Monitor Control", "WhiteThunder", "1.2.0")]
+    [Info("Storage Monitor Control", "WhiteThunder", "1.2.1")]
     [Description("Allows storage monitors to be deployed to more container types.")]
     internal class StorageMonitorControl : CovalencePlugin
     {
@@ -220,9 +220,9 @@ namespace Oxide.Plugins
                 storageMonitor.SetParent(newStorageParent, worldPositionStays: true);
                 newStorageParent.SetSlot(BaseEntity.Slot.StorageMonitor, storageMonitor);
 
-                // Remove delegate before adding just in case it's already present (there isn't a way to check).
-                newStorageParent.inventory.onItemAddedRemoved -= storageMonitor.OnContainerChanged;
-                newStorageParent.inventory.onItemAddedRemoved += storageMonitor.OnContainerChanged;
+                // TODO: Handle onItemAddedToStack and onItemRemovedFromStack
+                newStorageParent.inventory.onItemAddedRemoved -= storageMonitor._onItemAddedRemoved;
+                newStorageParent.inventory.onItemAddedRemoved += storageMonitor._onItemAddedRemoved;
             }
         }
 
